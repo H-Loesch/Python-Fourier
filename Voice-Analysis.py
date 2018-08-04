@@ -22,7 +22,30 @@ def graphNow(labelX="X-axis", labelY="Y-axis"):
     plt.ylabel(labelY)
     plt.show()
 
+def plotFourierFile(fileName = ""):
+    ''' Plot the fourier transform of audio from a file.'''
+    #Huh. So that's how python methods are commented, I guess. Neat, I guess. 
 
+    [sampleRate, aud_data] = wav.read(fileName)
+    assert (len(aud_data) != 0), "Audio file was not found."
+    
+    fourierOut = fft.fft(aud_data)
+    plotFourier(sampleRate, fourierOut)
+
+def plotFourier(sampleRate = 32000, fourierArray = []):
+    '''Plot a fourier transform.
+       Does not show the plot automatically.'''
+    sampleNum = len(fourierArray)
+    #sampleTimes = numpy.linspace(0, sampleNum / sampleRate, sampleNum) #array of sample timestamps. Not used, but may be useful?
+    sampleLength = sampleNum / sampleRate #duration of audio signal (seconds)
+    xAxis = numpy.arange(0, sampleNum, 1/sampleLength)
+    xAxis = xAxis[0:sampleNum]
+
+    fourier = abs(fourierArray)
+    fourier = numpy.split(fourier, 2)[0] #divides into the first half, since the second is a mirror of the first.
+    xAxis = numpy.split(xAxis, 2)[0]
+
+    plt.plot(xAxis, fourier)
 
 #data retrieval 
 #//////////////////////////////////////////////////////////
@@ -37,17 +60,19 @@ def graphNow(labelX="X-axis", labelY="Y-axis"):
 sampleNum = len(aud_data)
 sampleTimes = numpy.linspace(0, sampleNum / sampleRate, sampleNum) #creates array of sample timestamps
 sampleLength = sampleNum / sampleRate #Duration of audio signal (seconds)
-xAxis = numpy.arange(0, sampleNum, 1/sampleLength) #Dividing the unit step length by 1/sampleLength ensures the x-axis is scaled correctly
-
 fourierTransform = abs(fft.fft(aud_data))
 
 
 #data display
 #//////////////////////////////////////////////////////////
-
-plt.plot(xAxis[0:sampleNum], fourierTransform[0:sampleNum], 'b--') 
+xAxis = numpy.arange(0, sampleNum, 1/sampleLength) #Dividing the unit step length by 1/sampleLength ensures the x-axis is scaled correctly
+xAxis = xAxis[0:sampleNum]
+xAxis = numpy.split(xAxis, 4)[0]
+fourierTransform = numpy.split(fourierTransform, 4)[0]
+plt.plot(xAxis, fourierTransform, 'b--') 
 #plt.plot(numpy.linspace(0, sampleNum, sampleNum), fft.fft(sampleNum * 5* numpy.sin(440 * numpy.pi * 2 * numpy.linspace(0, sampleNum, sampleNum))), 'r-')
+#plt.xticks(numpy.arange(0, sampleRate/4, 1000), numpy.arange(0, sampleRate/4, 1000))
+plt.title("Comparison of Python-generated waveform with Audacity-waveform for 880 Hz sinewave")
 plt.show()
-
 #closing
 #//////////////////////////////////////////////////////////
