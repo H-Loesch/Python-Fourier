@@ -10,31 +10,37 @@ from scipy.io import wavfile as wav #allows working with *.wav files in a numpy 
 #Methods
 #//////////////////////////////////////////////////////////
 
-#plots a single x-y figure.
-#Also allows labelling of x and y axis, and an input string (all in that order)
+
 def onePlot(xAxis, yAxis, inputString="b-", labelX="X-axis", labelY="Y-axis"):
+    '''plots a single x-y figure.
+       Also allows labelling of x and y axis, and an input string (all in that order)'''
     plt.plot(xAxis, yAxis, inputString)
     graphNow(labelX, labelY)
 
-#Define x- and y- labels, and display the graph. 
+#
 def graphNow(labelX="X-axis", labelY="Y-axis"):
+    "Define x- and y- labels, and display the graph."
     plt.xlabel(labelX)
     plt.ylabel(labelY)
     plt.show()
 
-def plotFourierFile(fileName = ""):
-    ''' Plot the fourier transform of audio from a file.'''
+def plotFourierFile(fileName = "", size = 2):
+    ''' Plot the fourier transform of audio from a file.
+        size is the fraction of the fourier transform to show.
+            Default is 2, since the second half of the transform is a mirror of the first'''
     #Huh. So that's how python methods are commented, I guess. Neat, I guess. 
 
     [sampleRate, aud_data] = wav.read(fileName)
     assert (len(aud_data) != 0), "Audio file was not found."
     
     fourierOut = fft.fft(aud_data)
-    plotFourier(sampleRate, fourierOut)
+    plotFourier(sampleRate, fourierOut, size)
 
-def plotFourier(sampleRate = 32000, fourierArray = []):
+def plotFourier(sampleRate = 32000, fourierArray = [], size = 2):
     '''Plot a fourier transform.
-       Does not show the plot automatically.'''
+       Does not show the plot automatically.
+       Size is the fraction of the fourier transform to show.
+        Default is 2, since the second half of the transform is a mirror of the first'''
     sampleNum = len(fourierArray)
     #sampleTimes = numpy.linspace(0, sampleNum / sampleRate, sampleNum) #array of sample timestamps. Not used, but may be useful?
     sampleLength = sampleNum / sampleRate #duration of audio signal (seconds)
@@ -42,37 +48,15 @@ def plotFourier(sampleRate = 32000, fourierArray = []):
     xAxis = xAxis[0:sampleNum]
 
     fourier = abs(fourierArray)
-    fourier = numpy.split(fourier, 2)[0] #divides into the first half, since the second is a mirror of the first.
-    xAxis = numpy.split(xAxis, 2)[0]
+    fourier = numpy.split(fourier, size)[0] 
+    xAxis = numpy.split(xAxis, size)[0]
+    print(sampleRate)
+    plt.semilogx(xAxis[75:len(xAxis)], fourier[75:len(xAxis)]) #cutting off first 75, so that the rest of the waveform is actually shown
+    #the first 75 tend to not matter very much, anyway.
+#int main() {
+#//////////////////////////////////////////////////////////////////////////////
 
-    plt.plot(xAxis, fourier)
-
-#data retrieval 
-#//////////////////////////////////////////////////////////
-
-#reads from the given file, and returns an array of the sample rate, and an array of the data
-[sampleRate, aud_data] = wav.read("sinewave.wav") #these files should be at 32000Hz, 16-bit signed *.wav
-#print(sinewave[1])
-
-#data analysis/processing
-#//////////////////////////////////////////////////////////
-
-sampleNum = len(aud_data)
-sampleTimes = numpy.linspace(0, sampleNum / sampleRate, sampleNum) #creates array of sample timestamps
-sampleLength = sampleNum / sampleRate #Duration of audio signal (seconds)
-fourierTransform = abs(fft.fft(aud_data))
-
-
-#data display
-#//////////////////////////////////////////////////////////
-xAxis = numpy.arange(0, sampleNum, 1/sampleLength) #Dividing the unit step length by 1/sampleLength ensures the x-axis is scaled correctly
-xAxis = xAxis[0:sampleNum]
-xAxis = numpy.split(xAxis, 4)[0]
-fourierTransform = numpy.split(fourierTransform, 4)[0]
-plt.plot(xAxis, fourierTransform, 'b--') 
-#plt.plot(numpy.linspace(0, sampleNum, sampleNum), fft.fft(sampleNum * 5* numpy.sin(440 * numpy.pi * 2 * numpy.linspace(0, sampleNum, sampleNum))), 'r-')
-#plt.xticks(numpy.arange(0, sampleRate/4, 1000), numpy.arange(0, sampleRate/4, 1000))
-plt.title("Comparison of Python-generated waveform with Audacity-waveform for 880 Hz sinewave")
+plotFourierFile("voice1.wav", 2)
+plt.title("Comparison of idle vocal, Audacity v Program")
 plt.show()
-#closing
-#//////////////////////////////////////////////////////////
+#graphNow("Frequency (HZ)", "Magnitude")
