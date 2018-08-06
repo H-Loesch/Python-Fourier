@@ -28,11 +28,11 @@ def plotFourierFile(fileName = "", size = 2):
     ''' Plot the fourier transform of audio from a file.
         size is the fraction of the fourier transform to show.
             Default is 2, since the second half of the transform is a mirror of the first'''
-    #Huh. So that's how python methods are commented, I guess. Neat, I guess. 
+    #Huh. So that's how python methods are commented, I guess. Neat?
 
     [sampleRate, aud_data] = wav.read(fileName)
-    assert (len(aud_data) != 0), "Audio file was not found."
-    
+    assert (len(aud_data) != 0), "Audio file is empty."
+
     fourierOut = fft.fft(aud_data)
     plotFourier(sampleRate, fourierOut, size)
 
@@ -45,18 +45,35 @@ def plotFourier(sampleRate = 32000, fourierArray = [], size = 2):
     #sampleTimes = numpy.linspace(0, sampleNum / sampleRate, sampleNum) #array of sample timestamps. Not used, but may be useful?
     sampleLength = sampleNum / sampleRate #duration of audio signal (seconds)
     xAxis = numpy.arange(0, sampleNum, 1/sampleLength)
-    xAxis = xAxis[0:sampleNum]
-
-    fourier = abs(fourierArray)
-    fourier = numpy.split(fourier, size)[0] 
+    xAxis = xAxis[0:sampleNum-(sampleNum % size)] #ensures that this is divisble by size
+    
+    fourier = abs(fourierArray)[0:(sampleNum - (sampleNum % size))] #make sure this is divisible by size. We're cutting off most so it's fine.
+    fourier = numpy.split(fourier, size)[0]
     xAxis = numpy.split(xAxis, size)[0]
-    print(sampleRate)
-    plt.semilogx(xAxis[75:len(xAxis)], fourier[75:len(xAxis)]) #cutting off first 75, so that the rest of the waveform is actually shown
-    #the first 75 tend to not matter very much, anyway.
+    plt.semilogx(xAxis, fourier)
+
 #int main() {
 #//////////////////////////////////////////////////////////////////////////////
 
-plotFourierFile("voice1.wav", 2)
-plt.title("Comparison of idle vocal, Audacity v Program")
+plt.subplot(2, 2, 1)
+plotFourierFile("ASample1Clean.wav")
+plt.title("A's Sample 1") 
+
+plt.subplot(2, 2, 2)
+plt.title("A's Sample 2") 
+plotFourierFile("Asample2Clean.wav")
+
+
+plt.subplot(2, 2, 3)
+plt.title("My sample 1")
+plt.xlabel("Frequency (Hz)")
+plt.ylabel("Magnitude") 
+plotFourierFile("MSample1Clean.wav")
+
+plt.subplot(2, 2, 4)
+plt.title("My sample 2")
+plt.xlabel("Frequency (Hz)")
+plt.ylabel("Magnitude") 
+plotFourierFile("MSample2Clean.wav")
+
 plt.show()
-#graphNow("Frequency (HZ)", "Magnitude")
